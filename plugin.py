@@ -160,7 +160,7 @@ def onHandleThread(startup):
         for dev in devs:
             Domoticz.Debug( 'Device name=' + str(dev['name']) + ' id=' + str(dev['id']) + ' ip=' + str(dev['ip']) + ' key=' + str(dev['key']) + ' version=' + str(dev['version']))
             # Create devices
-            if str(dev['ip']) != None:
+            if str(dev['ip']) != '':
                 tuya = tinytuya.Device(str(dev['id']), str(dev['ip']), str(dev['key']))
                 # tuya.use_old_device_list = True
                 # tuya.new_sign_algorithm = True
