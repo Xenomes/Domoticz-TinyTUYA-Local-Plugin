@@ -31,7 +31,8 @@ Is your subscription to cloud development plan expired, you can extend it <a hre
 
 ## Configuration
 
-There is no extra infomation needen, the info is readout of file 'devices.json' located in the plugin folder, keep the setting 'Data Timeout' at the plug-in disabled.
+There is no extra information need, the info is readout of file 'devices.json' located in the plugin folder, keep the setting 'Data Timeout' at the plug-in disabled.
+For the best performed it is advised to give the tuya devices a static ip, see your router manufacturer manual to setup static ip's.
 
 ## Usage
 

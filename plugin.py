@@ -149,14 +149,18 @@ def onHandleThread(startup):
             global devs
             global last_update
             last_update = time.time()
+            devs = None
             with open(Parameters['HomeFolder'] + '/devices.json') as dFile:
                 devs = json.load(dFile)
 
         # Initialize/Update devices from TUYA API
+        if devs is None:
+            Domoticz.Error('devices.json is missing in the plugin folder!')
+            return
         for dev in devs:
             Domoticz.Debug( 'Device name=' + str(dev['name']) + ' id=' + str(dev['id']) + ' ip=' + str(dev['ip']) + ' key=' + str(dev['key']) + ' version=' + str(dev['version']))
             # Create devices
-            if str(dev['ip']) != '':
+            if str(dev['ip']) != None:
                 tuya = tinytuya.Device(str(dev['id']), str(dev['ip']), str(dev['key']))
                 # tuya.use_old_device_list = True
                 # tuya.new_sign_algorithm = True
@@ -175,7 +179,7 @@ def onHandleThread(startup):
                 # status Domoticz
                 # sValue = Devices[dev['id']].Units[1].sValue
                 # nValue = Devices[dev['id']].Units[1].nValue
-                Domoticz.Debug(tuya.status())
+                # Domoticz.Debug(tuya.status())
                 currentstatus = tuya.status()['dps']['1']
                 if bool(currentstatus) == False:
                     UpdateDevice(dev['id'], 1, 'Off', 0, 0)
