@@ -1,0 +1,1 @@
+# Domoticz-TinyTUYA-Local-Plugin
