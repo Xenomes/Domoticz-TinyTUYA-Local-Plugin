@@ -92,7 +92,7 @@ class BasePlugin:
             SendCommand(DeviceID, Unit, eval(Color), category)
             UpdateDevice(DeviceID, Unit, Color, 1, 0)
         else:
-            SendCommand(DeviceID, Unit, True if Command not in ['Off', 'Close'] else False, category)
+            SendCommand(DeviceID, Unit, True if Command not in  ['Off', 'Close'] else False, category)
             UpdateDevice(DeviceID, Unit, Command, 1 if Command not in  ['Off', 'Close'] else 0, 0)
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
@@ -230,7 +230,7 @@ def onHandleThread(startup):
                                         Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=0, Used=1).Create() #On/Off
 
                                 # Create Selection Switch
-                                elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'fault', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'work_state', 'switch_mode', 'laser_switch'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
+                                elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'fault', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'switch_mode', 'laser_switch'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
                                     Domoticz.Log('Create Selection device')
                                     if item['code'] == 'mode':
                                         the_values = item['values']
@@ -327,7 +327,7 @@ def onHandleThread(startup):
                         if 'Device Unreachable' in str(tuyastatus):
                             Domoticz.Error('Device :' + dev['id'] + ' is Offline!')
                             setConfigItem(dev['id'], {'last_update': time.time() + 300})
-                            UpdateDevice(dev['id'], unit, None, 0, 1)
+                            UpdateDevice(dev['id'], 1, 'Off', 0, 1)
                         else:
                             # Domoticz.Debug('Type: ' + str(dev_type))
                             if dev_type in ('light', 'fanlight', 'pirlight'):
@@ -502,19 +502,19 @@ def SendCommand(ID, Unit, Status, Type = ''):
                 # Domoticz.Debug('Colour: r:' + str(Status['r']) + ' g:' + str(Status['g']) + ' b:' + str(Status['r']))
                 tuya.turn_on()
                 tuya.set_colour(Status['r'], Status['g'], Status['b'])
-        elif str(Status) == 'On':
+        elif bool(Status) == True:
             # Domoticz.Debug('SendCommand: On')
             tuya.turn_on()
-        elif str(Status) == 'Off':
+        elif bool(Status) == False:
             # Domoticz.Debug('SendCommand: Off')
             tuya.turn_off()
-        Domoticz.Debug('Command send to tuya :' + str(ID) + ", " + str({'commands': [{'Type': Type, 'value': Status}]}))
+        Domoticz.Debug('Command send to tuya BulbDevice: ' + str(ID) + ", " + str({'commands': [{'Type': Type, 'value': Status}]}))
     else:
         tuya = tinytuya.Device(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=1, connection_retry_limit=1)
         tuya.detect_available_dps()
-        payload=tuya.generate_payload(tinytuya.CONTROL_NEW, {Unit: Status})
+        payload = tuya.generate_payload(tinytuya.CONTROL_NEW, {Unit: Status})
         tuya.send(payload)
-        Domoticz.Debug('Command send to tuya :' + str(ID) + ", " + str({'commands': [{'dsp': Unit, 'value': Status}]}))
+        Domoticz.Debug('Command send to tuya Device: ' + str(ID) + ", " + str({'commands': [{'dsp': Unit, 'value': Status}]}))
 
 def searchCode(Item, Functions):
     for OneItem in Functions:
@@ -584,6 +584,8 @@ def nextUnit(ID):
     return unit
 
 def convert_to_correct_type(str_value):
+    if isinstance(str_value, dict):
+        return str_value
     try:
         # Try converting to int
         return int(str_value)
@@ -599,11 +601,15 @@ def convert_to_correct_type(str_value):
                 elif str_value.lower() == "false":
                     return False
                 else:
-                    # If none of the above, try converting to dictionary
-                    return ast.literal_eval(str_value)
-            except (ValueError, SyntaxError):
-                # If all attempts fail, return the original string
-                return str_value
+                    # If none of the above, try decoding as JSON
+                    return json.loads(str_value)
+            except (ValueError, SyntaxError, json.JSONDecodeError):
+                try:
+                    # Try converting to list
+                    return list(ast.literal_eval(str_value))
+                except (ValueError, SyntaxError):
+                    # If all attempts fail, return the original string
+                    return str_value
 
 def ping_ok(sHost) -> bool:
     try:
