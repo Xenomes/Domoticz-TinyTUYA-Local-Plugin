@@ -1,13 +1,18 @@
+# NOT YET READY FOR LIVE SYSTEMS
+
+
+
 # Domoticz-TinyTUYA-Local-Plugin
 TUYA Plugin for Domoticz home automation
 
-Controls TUYA devices on your local network mainly on/off in the future maybe more devices.
+Controls TUYA devices on your local network.
 
 ## Installation
 
-The plugin make use of the project Tinytuya there for is a IoT Cloud Platform account needed, for setup up see https://github.com/jasonacox/tinytuya step 3 or see PDF https://github.com/jasonacox/tinytuya/files/8145832/Tuya.IoT.API.Setup.pdf
+The plugin make use of the project Tinytuya there for is a IoT Cloud Platform account needed, for setup up see https://github.com/jasonacox/tinytuya step 3 or see PDF https://github.com/jasonacox/tinytuya/files/12836816/Tuya.IoT.API.Setup.v2.pdf
+for the best compatibility, set your devices to 'DP instruction' in the device settings under iot.tuya.com.
 
-Python version 3.8 or higher required & Domoticz version 2022.2 or greater.
+Python version 3.8 or higher required & Domoticz version 2024.1 or greater.
 
 To install:
 * Go in your Domoticz directory using a command line and open the plugins directory.
@@ -36,16 +41,17 @@ For the best performed it is advised to give the tuya devices a static ip, see y
 
 ## Usage
 
-In the web UI, navigate to the Hardware page. In the hardware dropdown there will be an entry called "TinyTUYATinyTUYA (Local Control)" add the hardware.
+In the web UI, navigate to the Hardware page. In the hardware dropdown there will be an entry called "TinyTUYA (Local Control)" add the hardware.
 
 ## Test device
 
-I had only a RGBWW light to fully test the script, if there is a device missing in the plugin you can provide the json file by create a post in issues on Github.
+I only had an RGBWW light to fully test the script. If there is a device missing in the plugin, you can provide the JSON file by creating a post in issues on GitHub. Don't forget to obfuscate the 'Key' in the JSON.
 
 ## Change log
 
 | Version | Information|
 | --- | ---------- |
 | 0.1 | Initial upload version |
+| 0.2 | Add unit detection devices. |
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/xenomes)
