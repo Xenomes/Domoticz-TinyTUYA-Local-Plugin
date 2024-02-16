@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.1" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.2" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.1</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.2</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
