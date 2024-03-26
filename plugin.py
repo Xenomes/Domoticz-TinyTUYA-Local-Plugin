@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.2" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.3" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.2</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.3</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -83,17 +83,23 @@ class BasePlugin:
         # Domoticz.Debug('nValue: ' + str(dev.nValue))
         # Domoticz.Debug('sValue: ' + str(dev.sValue) + ' Type ' + str(type(dev.sValue)))
         # Domoticz.Debug('LastLevel: ' + str(dev.LastLevel))
+        # Domoticz.Debug('Type: ' + str(dev.Type) + ' ' + str(dev.SubType) + ' ' + str(dev.SwitchType))
 
         # Control device and update status in Domoticz
         if Command == 'Set Level':
-            SendCommand(DeviceID, Unit, Level, category)
-            UpdateDevice(DeviceID, Unit, Level, 1, 0)
+            if dev.Type == 244 and dev.SubType == 62 and dev.SwitchType == 18:
+                mode = dev.Options['LevelNames'].split('|')
+                SendCommand(DeviceID, Unit, mode[int(Level / 10)])
+                UpdateDevice(DeviceID, Unit, Level, 1, 0)
+            else:
+                SendCommand(DeviceID, Unit, Level, category)
+                UpdateDevice(DeviceID, Unit, Level, 1, 0)
         elif Command == 'Set Color':
             SendCommand(DeviceID, Unit, eval(Color), category)
             UpdateDevice(DeviceID, Unit, Color, 1, 0)
         else:
-            SendCommand(DeviceID, Unit, True if Command not in  ['Off', 'Close'] else False, category)
-            UpdateDevice(DeviceID, Unit, Command, 1 if Command not in  ['Off', 'Close'] else 0, 0)
+            SendCommand(DeviceID, Unit, True if Command not in ['Off', 'Close', False] else False, category)
+            UpdateDevice(DeviceID, Unit, Command, 1 if Command not in ['Off', 'Close'] else 0, 0)
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log('Notification: ' + Name + ', ' + Subject + ', ' + Text + ', ' + Status + ', ' + str(Priority) + ', ' + Sound + ', ' + ImageFile)
@@ -332,17 +338,20 @@ def onHandleThread(startup):
                             # Domoticz.Debug('Type: ' + str(dev_type))
                             if dev_type in ('light', 'fanlight', 'pirlight'):
                                 unit = 1
-                                UpdateDevice(dev['id'], unit, True if bool(tuyastatus['dps']['1']) == True else False, 0 if bool(tuyastatus['dps']['1']) == False else 1, 0)
+                                UpdateDevice(dev['id'], unit, True if bool(tuyastatus['dps']['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
                             if dev_type not in ('light', 'pirlight'):
                                 # Domoticz.Debug(str(mapping.values()))
                                 for item in mapping.values():
+                                    tuyastatus = tuya.status()
                                     # Create sub devices
                                     try:
                                         unit = int(item['dp'])
+                                        dtype = Devices[dev['id']].Units[unit]
                                         currentstatus = convert_to_correct_type(tuyastatus['dps'][str(unit)])
                                         # Domoticz.Debug('Unit: ' + str(unit))
                                         # Domoticz.Debug(str(item['code']))
                                         # Domoticz.Debug('Currentstatus: ' + str(currentstatus))
+                                        # Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']['range']))
                                         # Create Switch
                                         if item['code'] in ('switch', 'switch_1', 'switch_2'):
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
@@ -358,12 +367,15 @@ def onHandleThread(startup):
                                             lastupdate = (int(time.time()) - int(time.mktime(time.strptime(Devices[dev['id']].Units[103 + unit].LastUpdate, '%Y-%m-%d %H:%M:%S'))))
                                             lastvalue = Devices[dev['id']].Units[103 + unit].sValue if len(Devices[dev['id']].Units[103 + unit].sValue) > 0 else '0;0'
                                             UpdateDevice(dev['id'], 103 + unit, str(currentpower) + ';' + str(float(lastvalue.split(';')[1]) + ((currentpower) * (lastupdate / 3600))) , 0, 0, 1)
+                                        elif dtype.Type == 244 and dtype.SubType == 62 and dtype.SwitchType == 18:
+                                            mode = ['off']
+                                            mode.extend(item['values']['range'])
+                                            UpdateDevice(dev['id'], unit, int(mode.index(str(currentstatus)) * 10), 1, 0)
                                         else:
-                                            UpdateDevice(dev['id'], unit, str(currentstatus), 0 if currentstatus == False else 1, 0)
+                                            UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
+                                        battery_device(unit, item['code'], currentstatus)
                                     except:
                                         Domoticz.Debug('No mapping for ' + item['code'] + ' skipped')
-
-                            battery_device(unit, item['code'], currentstatus)
 
     except Exception as err:
         Domoticz.Error('handleThread: ' + str(err)  + ' line ' + format(sys.exc_info()[-1].tb_lineno))
@@ -502,10 +514,10 @@ def SendCommand(ID, Unit, Status, Type = ''):
                 # Domoticz.Debug('Colour: r:' + str(Status['r']) + ' g:' + str(Status['g']) + ' b:' + str(Status['r']))
                 tuya.turn_on()
                 tuya.set_colour(Status['r'], Status['g'], Status['b'])
-        elif bool(Status) == True:
+        elif Status == True:
             # Domoticz.Debug('SendCommand: On')
             tuya.turn_on()
-        elif bool(Status) == False:
+        elif Status == False:
             # Domoticz.Debug('SendCommand: Off')
             tuya.turn_off()
         Domoticz.Debug('Command send to tuya BulbDevice: ' + str(ID) + ", " + str({'commands': [{'Type': Type, 'value': Status}]}))
@@ -540,32 +552,32 @@ def battery_device(ID, ResultValue, StatusDeviceTuya):
     # Battery_device
     if searchCode('battery_state', ResultValue) or searchCode('battery', ResultValue) or searchCode('va_battery', ResultValue) or searchCode('battery_percentage', ResultValue):
         if searchCode('battery_state', ResultValue):
-            if StatusDeviceTuya('battery_state') == 'high':
+            if StatusDeviceTuya == 'high':
                 currentbattery = 100
-            if StatusDeviceTuya('battery_state') == 'middle':
+            if StatusDeviceTuya == 'middle':
                 currentbattery = 50
-            if StatusDeviceTuya('battery_state') == 'low':
+            if StatusDeviceTuya == 'low':
                 currentbattery = 5
         if searchCode('BatteryStatus', ResultValue):
-            if int(StatusDeviceTuya('BatteryStatus')) == 1:
+            if int(StatusDeviceTuya) == 1:
                 currentbattery = 100
-            elif int(StatusDeviceTuya('BatteryStatus')) == 2:
+            elif int(StatusDeviceTuya) == 2:
                 currentbattery = 50
-            elif int(StatusDeviceTuya('BatteryStatus')) == 3:
+            elif int(StatusDeviceTuya) == 3:
                 currentbattery = 5
             else:
                 currentbattery = 100
         if searchCode('battery', ResultValue):
-            currentbattery = StatusDeviceTuya('battery') * 10
+            currentbattery = StatusDeviceTuya * 10
         if searchCode('va_battery', ResultValue):
-            currentbattery = StatusDeviceTuya('va_battery')
+            currentbattery = StatusDeviceTuya
         if searchCode('battery_percentage', ResultValue):
-            currentbattery = StatusDeviceTuya('battery_percentage')
+            currentbattery = StatusDeviceTuya
         if searchCode('residual_electricity', ResultValue):
-            currentbattery = StatusDeviceTuya('residual_electricity')
+            currentbattery = StatusDeviceTuya
         for unit in Devices[ID].Units:
             if str(currentbattery) != str(Devices[ID].Units[unit].BatteryLevel):
-                Devices[ID].Units[unit].BatteryLevel = currentbatter
+                Devices[ID].Units[unit].BatteryLevel = currentbattery
                 Devices[ID].Units[unit].Update()
     return
 

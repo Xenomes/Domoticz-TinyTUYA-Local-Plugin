@@ -52,6 +52,7 @@ I only had an RGBWW light to fully test the script. If there is a device missing
 | Version | Information|
 | --- | ---------- |
 | 0.1 | Initial upload version |
-| 0.2 | Add unit detection devices. |
+| 0.2 | Add unit detection devices |
+| 0.3 | Add True and False statment |
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/xenomes)
