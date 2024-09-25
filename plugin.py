@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.4" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.4a" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.4</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.4a</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -162,7 +162,7 @@ def onHandleThread(startup):
             global last_update
             last_update = time.time()
             devs = None
-            with open(Parameters['HomeFolder'] + '/devices.json') as dFile:
+            with open(Parameters['HomeFolder'] + 'devices.json') as dFile:
                 devs = json.load(dFile)
 
         Domoticz.Debug('Devs' + str(devs))
@@ -220,7 +220,7 @@ def onHandleThread(startup):
                             if  createDevice(dev['id'], unit):
 
                                 # Create Switch
-                                if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed']:
+                                if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed', 'MachineRainMode']:
                                     Domoticz.Log('Create device Switch')
                                     if item['code'] in ['doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock']:
                                         Domoticz.Log('Create Doorcontact device')
@@ -238,7 +238,7 @@ def onHandleThread(startup):
                                         Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=0, Used=1).Create() #On/Off
 
                                 # Create Selection Switch
-                                elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'switch_mode', 'laser_switch', 'defrost_state', 'compressor_state'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
+                                elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'switch_mode', 'laser_switch', 'defrost_state', 'compressor_state', 'MachineControlCmd'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
                                     Domoticz.Log('Create Selection device')
                                     the_values = item['values']
                                     mode = ['off']
@@ -279,7 +279,7 @@ def onHandleThread(startup):
                                     Domoticz.Unit(Name=dev['name'] + ' (kWh)', DeviceID=dev['id'],Unit=103 + unit, Type=243, Subtype=29, Used=1).Create()
 
                                 # Create Sensors
-                                elif item['code'] in ['temp_current', 'intemp', 'outtemp', 'whjtemp', 'cmptemp', 'wttemp', 'hqtemp', 'va_temperature''sub1_temp', 'sub2_temp', 'sub3_temp', 'Temperature', 'temp_indoor', 'temperature', 'temp_top', 'temp_bottom']:
+                                elif item['code'] in ['temp_current', 'intemp', 'outtemp', 'whjtemp', 'cmptemp', 'wttemp', 'hqtemp', 'va_temperature''sub1_temp', 'sub2_temp', 'sub3_temp', 'Temperature', 'temp_indoor', 'temperature', 'temp_top', 'temp_bottom',]:
                                     Domoticz.Log('Create Temperature device')
                                     Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=80, Subtype=5, Used=1).Create() #Temperature sensor
                                 elif item['code'] in ['va_humidity', 'sub1_hum', 'sub2_hum', 'sub3_hum', 'humidity_indoor']:
@@ -297,12 +297,12 @@ def onHandleThread(startup):
                                     options = {}
                                     options['Custom'] = the_values.get('unit')
                                     Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=31, Options=options, Used=1).Create() #Custom Sensor
-                                elif item['code'] in ['air_quality_index', 'direction_a', 'direction_b', 'gateway', 'status', 'fault', 'multifunctionalarm', 'air_quality', 'watersensor_state']:
+                                elif item['code'] in ['air_quality_index', 'direction_a', 'direction_b', 'gateway', 'status', 'fault', 'multifunctionalarm', 'air_quality', 'watersensor_state', 'MachineStatus', 'MachineWarning', 'MachineError']:
                                     Domoticz.Log('Create Text device')
                                     Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=19, Image=13, Used=1).Create() #Text
 
                                 # Create SetPoint device
-                                elif item['code'] in ['set_temp', 'temp_set', 'cook_temperature', 'wth_stemp', 'ach_stemp', 'aircond_temp_diff', 'wth_temp_diff', 'acc_stemp']:
+                                elif item['code'] in ['set_temp', 'temp_set', 'cook_temperature', 'wth_stemp', 'ach_stemp', 'aircond_temp_diff', 'wth_temp_diff', 'acc_stemp', 'cook_temperature']:
                                     the_values = item['values']
                                     options = {}
                                     options['ValueStep'] = the_values.get('step')
@@ -348,7 +348,7 @@ def onHandleThread(startup):
                                     try:
                                         unit = int(item['dp'])
                                         dtype = Devices[dev['id']].Units[unit]
-                                        currentstatus = convert_to_correct_type(tuyastatus['dps'][str(unit)], item)
+                                        currentstatus = get_scale(tuyastatus['dps'][str(unit)], item)
                                         Domoticz.Debug('Unit: ' + str(unit))
 
                                         Domoticz.Debug('Currentstatus: ' + str(currentstatus))
@@ -514,9 +514,12 @@ def UpdateDevice(ID, Unit, sValue, nValue, TimedOut, AlwaysUpdate = 0):
 def SendCommand(ID, Unit, Status, Type = ''):
     Domoticz.Debug('SendCommand =  ID:' + str(ID) + ' IP:' + str(getConfigItem(ID, 'ip'))  + ' Type:' +  str(Type) + ' Status:' +  str(Status) + ' Status Type:' +  str(type(Status)) + ' Version:' + str(getConfigItem(ID, 'version')))
     if Type == 'light':
+        selected_device = next((dev for dev in devs if dev['id'] == str(ID)), None)
+        item = selected_device['mapping'][str(Unit)]
+        Status = get_scale(Status, item)
+        Domoticz.Debug('Status: ' + str(Status))
         tuya = tinytuya.BulbDevice(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=1, connection_retry_limit=1)
         tuya.detect_available_dps()
-        Status = convert_to_correct_type(Status, item)
         # tuya = tinytuya.BulbDevice(str(ID), getConfigItem(ID, 'ip'), getConfigItem(ID, 'key'))
         # tuya.set_version(str(getConfigItem(ID, 'version')))
         if type(Status) == int or type(Status) == float:
@@ -543,7 +546,7 @@ def SendCommand(ID, Unit, Status, Type = ''):
     else:
         selected_device = next((dev for dev in devs if dev['id'] == str(ID)), None)
         item = selected_device['mapping'][str(Unit)]
-        Status = convert_to_correct_type(Status, item)
+        Status = get_scale(Status, item)
         tuya = tinytuya.Device(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=1, connection_retry_limit=1)
         tuya.detect_available_dps()
         payload = tuya.generate_payload(tinytuya.CONTROL_NEW, {Unit: Status})
@@ -617,34 +620,35 @@ def nextUnit(ID):
         unit = unit + 1
     return unit
 
-def convert_to_correct_type(str_value, item):
-    str_value = get_scale(str_value, item)
-    if isinstance(str_value, dict):
-        return str_value
-    try:
-        # Try converting to int
-        return int(str_value)
-    except ValueError:
-        try:
-            # Try converting to float
-            return float(str_value)
-        except ValueError:
-            try:
-                # Try converting to bool
-                if str_value.lower() == "true":
-                    return True
-                elif str_value.lower() == "false":
-                    return False
-                else:
-                    # If none of the above, try decoding as JSON
-                    return json.loads(str_value)
-            except (ValueError, SyntaxError, json.JSONDecodeError):
-                try:
-                    # Try converting to list
-                    return list(ast.literal_eval(str_value))
-                except (ValueError, SyntaxError):
-                    # If all attempts fail, return the original string
-                    return str_value
+# def convert_to_correct_type(str_value, item):
+#     str_value = get_scale(str_value, item)
+#     Domoticz.Debug('str_value: ' + str(str_value))
+#     if isinstance(str_value, dict):
+#         return str_value
+#     try:
+#         # Try converting to int
+#         return int(str_value)
+#     except ValueError:
+#         try:
+#             # Try converting to float
+#             return float(str_value)
+#         except ValueError:
+#             try:
+#                 # Try converting to bool
+#                 if str_value.lower() == "true":
+#                     return True
+#                 elif str_value.lower() == "false":
+#                     return False
+#                 else:
+#                     # If none of the above, try decoding as JSON
+#                     return json.loads(str_value)
+#             except (ValueError, SyntaxError, json.JSONDecodeError):
+#                 try:
+#                     # Try converting to list
+#                     return list(ast.literal_eval(str_value))
+#                 except (ValueError, SyntaxError):
+#                     # If all attempts fail, return the original string
+#                     return str_value
 
 def ping_ok(sHost) -> bool:
     try:
@@ -685,31 +689,43 @@ def set_scale(raw, item):
 
 def get_scale(raw, item):
     scale = 0
-    # if actual_function_name == 'temp_current': actual_function_name = 'temp_set'
-    try:
-        Domoticz.Debug('Scale :' + str(item['values'].get('scale', 0 )))
-        scale = item['values'].get('scale', 0 )
-        # step = the_values.get('step', 0)
-        unit = item['values'].get('unit', 0)
-        max = item['values'].get('max', 0)
-        if scale == 0:
-            if unit == 'V' and len(str(max)) >= 4:
-                result = float(raw / 10)
-            elif unit == 'W' and len(str(max)) >= 5:
-                result = float(raw / 10)
+
+    # Check if raw is a valid number (int, float, or numeric string)
+    if not isinstance(raw, (list, tuple, dict, set, bool, complex, bytes, str)) or (isinstance(raw, str) and raw.isnumeric()):
+        # Convert numeric strings to floats
+        raw = float(raw) if isinstance(raw, str) else raw
+
+        try:
+            Domoticz.Debug('Raw Value: ' + str(raw))
+            Domoticz.Debug('Item Values: ' + str(item['values']))
+
+            scale = item['values'].get('scale', 0)
+            unit = item['values'].get('unit', 0)
+            max_value = item['values'].get('max', 0)
+
+            if scale == 0:
+                if unit == 'V' and len(str(max_value)) >= 4:
+                    result = raw / 10
+                elif unit == 'W' and len(str(max_value)) >= 5:
+                    result = raw / 10
+                else:
+                    result = int(raw)
+            elif scale == 1:
+                result = raw / 10
+            elif scale == 2:
+                result = raw / 100
+            elif scale == 3:
+                result = raw / 1000
             else:
                 result = int(raw)
-        elif scale == 1:
-            result = float(raw / 10)
-        elif scale == 2:
-            result = float(raw / 100)
-        elif scale == 3:
-            result = float(raw / 1000)
-        else:
-            result = int(raw)
-    except:
+        except (KeyError, ValueError) as e:
+            result = raw
+            Domoticz.Debug('Exception occurred: ' + str(e) + ', returning raw value: ' + str(result))
+    else:
+        # If raw is not numeric, return it unmodified
         result = raw
-        Domoticz.Debug('except ' + str(result))
+        Domoticz.Debug('Non-numeric input, returning raw value: ' + str(result))
+
     return result
 
     # Configuration Helpers
