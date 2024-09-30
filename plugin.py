@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.4a" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.4a</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.5</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -213,121 +213,122 @@ def onHandleThread(startup):
                             else:
                                 Domoticz.Log('Create device Light On/Off (Unknown Light Device)')
                                 Domoticz.Unit(Name=dev['name'] + ' (Unknown Light Device)', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=0, Used=1).Create() #On/Off
-                    elif dev_type not in ('light', 'fanlight', 'pirlight'):
-                        for item in mapping.values():
-                            # Domoticz.Debug(str(item['code']))
-                            unit = int(item['dp'])
-                            if  createDevice(dev['id'], unit):
+                    # elif dev_type not in ('light', 'fanlight', 'pirlight'):
+                    for item in mapping.values():
+                        # Domoticz.Debug(str(item['code']))
+                        unit = int(item['dp'])
+                        if  createDevice(dev['id'], unit):
 
-                                # Create Switch
-                                if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed', 'MachineRainMode']:
-                                    Domoticz.Log('Create device Switch')
-                                    if item['code'] in ['doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock']:
-                                        Domoticz.Log('Create Doorcontact device')
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=11, Used=1).Create() #Contact
-                                    elif item['code'] in ['position']:
-                                        Domoticz.Log('Create Cover device')
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=21, Used=1).Create() #Blinds Percentage With Stop
-                                    elif item['code'] in ['switch_pir']:
-                                        Domoticz.Log('Create Motion Sensor device')
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=8, Used=1).Create() #Motion Sensor
-                                    elif item['code'] in ['laser_bright',  'fan_speed']:
-                                        Domoticz.Log('Create Dimmer device')
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=7, Used=1).Create() #Dimmer
-                                    else:
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=0, Used=1).Create() #On/Off
-
-                                # Create Selection Switch
-                                elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'switch_mode', 'laser_switch', 'defrost_state', 'compressor_state', 'MachineControlCmd'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
-                                    Domoticz.Log('Create Selection device')
-                                    the_values = item['values']
-                                    mode = ['off']
-                                    mode.extend(the_values.get('range'))
-                                    options = {}
-                                    options['LevelOffHidden'] = 'true'
-                                    options['LevelActions'] = ''
-                                    options['LevelNames'] = '|'.join(mode)
-                                    options['SelectorStyle'] = '0' if len(mode) < 5 else '1'
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=62, Switchtype=18, Options=options, Image=9, Used=1).Create() #Selector Switch
-
-                                # Powermetering
-                                elif item['code'] in ['ActivePowerA'] in code_list and ['ActivePowerB'] in code_list and ['ActivePowerC']:
-                                    Domoticz.Log('Create Current (3 Phase) device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=89, Subtype=1, Used=1).Create() #Ampere (3 Phase)
-                                elif item['code'] in ['cur_power', 'cur_power', 'power_a', 'power_b']:
-                                    Domoticz.Log('Create Watt device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=248, Subtype=1, Switchtype=0, Used=1).Create() #Electric Usage
-                                elif item['code'] in ['cur_current', 'cmp_cur', 'leakage_current', 'Current']:
-                                    Domoticz.Log('Create Amperes device')
-                                    the_values = item['values']
-                                    if the_values.get('unit') != 'A':
-                                        options = {}
-                                        options['Custom'] = '1;'+ the_values.get('unit')
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=31, Switchtype=0, Used=1).Create() #Custom Sensor
-                                    else:
-                                        Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=23, Switchtype=0, Used=1).Create() #Current (Single)
-                                elif item['code'] in ['voltage_a', 'cur_voltage', 'cur_voltage']:
-                                    Domoticz.Log('Create Volt device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=8, Switchtype=0, Used=1).Create() #Voltage
-                                elif item['code'] in ['add_ele', 'ActivePower', 'ActivePowerA', 'ActivePowerB', 'ActivePowerC', 'phase_a', 'total_power', 'cur_power']:
-                                    Domoticz.Log('Create Power device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=29, Used=1).Create() #kWh
-                                elif item['code'] in ['phase_a'] and item['type'] in ['Raw']:
-                                    Domoticz.Unit(Name=dev['name'] + ' (A)', DeviceID=dev['id'], Unit=100 + unit, Type=243, Subtype=23, Used=1).Create()
-                                    Domoticz.Unit(Name=dev['name'] + ' (W)', DeviceID=dev['id'], Unit=101 + unit, Type=248, Subtype=1, Used=1).Create()
-                                    Domoticz.Unit(Name=dev['name'] + ' (V)', DeviceID=dev['id'], Unit=102 + unit, Type=243, Subtype=8, Used=1).Create()
-                                    Domoticz.Unit(Name=dev['name'] + ' (kWh)', DeviceID=dev['id'],Unit=103 + unit, Type=243, Subtype=29, Used=1).Create()
-
-                                # Create Sensors
-                                elif item['code'] in ['temp_current', 'intemp', 'outtemp', 'whjtemp', 'cmptemp', 'wttemp', 'hqtemp', 'va_temperature''sub1_temp', 'sub2_temp', 'sub3_temp', 'Temperature', 'temp_indoor', 'temperature', 'temp_top', 'temp_bottom',]:
-                                    Domoticz.Log('Create Temperature device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=80, Subtype=5, Used=1).Create() #Temperature sensor
-                                elif item['code'] in ['va_humidity', 'sub1_hum', 'sub2_hum', 'sub3_hum', 'humidity_indoor']:
-                                    Domoticz.Log('Create Humidity device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=81, Subtype=1, Used=1).Create() #Humidity sensor
-                                elif item['code'] in ['electricity_left', 'filter']:
-                                    Domoticz.Log('Create Percentage device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=6, Used=1).Create() #Percentage
-                                elif item['code'] in ['bright_value']:
-                                    Domoticz.Log('Create Lux device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=246, Subtype=1, Switchtype=11, Used=1).Create() #Lux
-                                elif item['code'] in ['co2_value']:
-                                    Domoticz.Log('Create Custom device')
-                                    the_values = item['values']
-                                    options = {}
-                                    options['Custom'] = the_values.get('unit')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=31, Options=options, Used=1).Create() #Custom Sensor
-                                elif item['code'] in ['air_quality_index', 'direction_a', 'direction_b', 'gateway', 'status', 'fault', 'multifunctionalarm', 'air_quality', 'watersensor_state', 'MachineStatus', 'MachineWarning', 'MachineError']:
-                                    Domoticz.Log('Create Text device')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=19, Image=13, Used=1).Create() #Text
-
-                                # Create SetPoint device
-                                elif item['code'] in ['set_temp', 'temp_set', 'cook_temperature', 'wth_stemp', 'ach_stemp', 'aircond_temp_diff', 'wth_temp_diff', 'acc_stemp', 'cook_temperature']:
-                                    the_values = item['values']
-                                    options = {}
-                                    options['ValueStep'] = the_values.get('step')
-                                    options['ValueMin'] = the_values.get('min')
-                                    options['ValueMax'] = the_values.get('max')
-                                    options['ValueUnit'] = the_values.get('unit')
-                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=242, Subtype=1, Options=options, Used=1).Create() #Set Point
-
-                                # elif dev_type == 'infrared':
-                                #     Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=19, Used=0).Create()
-                                #     UpdateDevice(dev['id'], unit, 'Infrared devices are not yet able to be controlled by the plugin.', 0, 0)
+                            # Create Switch
+                            if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed', 'MachineRainMode']:
+                                Domoticz.Log('Create device Switch')
+                                if item['code'] in ['doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock']:
+                                    Domoticz.Log('Create Doorcontact device')
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=11, Used=1).Create() #Contact
+                                elif item['code'] in ['position']:
+                                    Domoticz.Log('Create Cover device')
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=21, Used=1).Create() #Blinds Percentage With Stop
+                                elif item['code'] in ['switch_pir']:
+                                    Domoticz.Log('Create Motion Sensor device')
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=8, Used=1).Create() #Motion Sensor
+                                elif item['code'] in ['laser_bright',  'fan_speed']:
+                                    Domoticz.Log('Create Dimmer device')
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=7, Used=1).Create() #Dimmer
                                 else:
-                                    Domoticz.Debug('No mapping found for device: ' + str(dev['name']) + ' sub device: ' + str(item['code']))
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=73, Switchtype=0, Used=1).Create() #On/Off
+
+                            # Create Selection Switch
+                            elif item['code'] in ['mode', 'work_mode', 'speed', 'fan_direction', 'Alarmtype', 'AlarmPeriod', 'alarm_state', 'status', 'alarm_volume', 'alarm_lock', 'cistern', 'suction', 'cistern', 'fan_speed_enum', 'dehumidify_set_value', 'device_mode', 'pir_sensitivity', 'manual_feed', 'manual_feed', 'feed_state', 'feed_report', 'alarm_lock', 'switch_mode', 'laser_switch', 'defrost_state', 'compressor_state', 'MachineControlCmd'] + [f'switch{i}_value' for i in range(1, 9)] + [f'switch_type_{i}' for i in range(1, 9)]:
+                                Domoticz.Log('Create Selection device')
+                                the_values = item['values']
+                                mode = ['off']
+                                mode.extend(the_values.get('range'))
+                                options = {}
+                                options['LevelOffHidden'] = 'true'
+                                options['LevelActions'] = ''
+                                options['LevelNames'] = '|'.join(mode)
+                                options['SelectorStyle'] = '0' if len(mode) < 5 else '1'
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=244, Subtype=62, Switchtype=18, Options=options, Image=9, Used=1).Create() #Selector Switch
+
+                            # Powermetering
+                            elif item['code'] in ['ActivePowerA'] in code_list and ['ActivePowerB'] in code_list and ['ActivePowerC']:
+                                Domoticz.Log('Create Current (3 Phase) device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=89, Subtype=1, Used=1).Create() #Ampere (3 Phase)
+                            elif item['code'] in ['cur_power', 'cur_power', 'power_a', 'power_b']:
+                                Domoticz.Log('Create Watt device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=248, Subtype=1, Switchtype=0, Used=1).Create() #Electric Usage
+                            elif item['code'] in ['cur_current', 'cmp_cur', 'leakage_current', 'Current']:
+                                Domoticz.Log('Create Amperes device')
+                                the_values = item['values']
+                                if the_values.get('unit') != 'A':
+                                    options = {}
+                                    options['Custom'] = '1;'+ the_values.get('unit')
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=31, Switchtype=0, Used=1).Create() #Custom Sensor
+                                else:
+                                    Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=23, Switchtype=0, Used=1).Create() #Current (Single)
+                            elif item['code'] in ['voltage_a', 'cur_voltage', 'cur_voltage']:
+                                Domoticz.Log('Create Volt device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=8, Switchtype=0, Used=1).Create() #Voltage
+                            elif item['code'] in ['add_ele', 'ActivePower', 'ActivePowerA', 'ActivePowerB', 'ActivePowerC', 'phase_a', 'total_power', 'cur_power']:
+                                Domoticz.Log('Create Power device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=29, Used=1).Create() #kWh
+                            elif item['code'] in ['phase_a'] and item['type'] in ['Raw']:
+                                Domoticz.Unit(Name=dev['name'] + ' (A)', DeviceID=dev['id'], Unit=100 + unit, Type=243, Subtype=23, Used=1).Create()
+                                Domoticz.Unit(Name=dev['name'] + ' (W)', DeviceID=dev['id'], Unit=101 + unit, Type=248, Subtype=1, Used=1).Create()
+                                Domoticz.Unit(Name=dev['name'] + ' (V)', DeviceID=dev['id'], Unit=102 + unit, Type=243, Subtype=8, Used=1).Create()
+                                Domoticz.Unit(Name=dev['name'] + ' (kWh)', DeviceID=dev['id'],Unit=103 + unit, Type=243, Subtype=29, Used=1).Create()
+
+                            # Create Sensors
+                            elif item['code'] in ['temp_current', 'intemp', 'outtemp', 'whjtemp', 'cmptemp', 'wttemp', 'hqtemp', 'va_temperature''sub1_temp', 'sub2_temp', 'sub3_temp', 'Temperature', 'temp_indoor', 'temperature', 'temp_top', 'temp_bottom',]:
+                                Domoticz.Log('Create Temperature device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=80, Subtype=5, Used=1).Create() #Temperature sensor
+                            elif item['code'] in ['va_humidity', 'sub1_hum', 'sub2_hum', 'sub3_hum', 'humidity_indoor']:
+                                Domoticz.Log('Create Humidity device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=81, Subtype=1, Used=1).Create() #Humidity sensor
+                            elif item['code'] in ['electricity_left', 'filter']:
+                                Domoticz.Log('Create Percentage device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=6, Used=1).Create() #Percentage
+                            elif item['code'] in ['bright_value']:
+                                Domoticz.Log('Create Lux device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=246, Subtype=1, Switchtype=11, Used=1).Create() #Lux
+                            elif item['code'] in ['co2_value', 'pm25', 'roll_brush', 'edge_brush', 'RH_value', 'RH_threshold', 'atmosphere', 'pm10', 'pm25_value', 'voc_value', 'ch2o_value', 'water_flow', 'dc_fan_speed', 'cmp_act_frep']:
+                                Domoticz.Log('Create Custom device')
+                                the_values = item['values']
+                                options = {}
+                                options['Custom'] = the_values.get('unit')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=31, Options=options, Used=1).Create() #Custom Sensor
+                            elif item['code'] in ['air_quality_index', 'direction_a', 'direction_b', 'gateway', 'status', 'fault', 'multifunctionalarm', 'air_quality', 'watersensor_state', 'MachineStatus', 'MachineWarning', 'MachineError']:
+                                Domoticz.Log('Create Text device')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=19, Image=13, Used=1).Create() #Text
+
+                            # Create SetPoint device
+                            elif item['code'] in ['set_temp', 'temp_set', 'cook_temperature', 'wth_stemp', 'ach_stemp', 'aircond_temp_diff', 'wth_temp_diff', 'acc_stemp', 'cook_temperature']:
+                                the_values = item['values']
+                                options = {}
+                                options['ValueStep'] = the_values.get('step')
+                                options['ValueMin'] = the_values.get('min')
+                                options['ValueMax'] = the_values.get('max')
+                                options['ValueUnit'] = the_values.get('unit')
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=242, Subtype=1, Options=options, Used=1).Create() #Set Point
+
+                            # elif dev_type == 'infrared':
+                            #     Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=19, Used=0).Create()
+                            #     UpdateDevice(dev['id'], unit, 'Infrared devices are not yet able to be controlled by the plugin.', 0, 0)
+                            else:
+                                Domoticz.Debug('No mapping found for device: ' + str(dev['name']) + ' sub device: ' + str(item['code']))
 
                     setConfigItem(dev['id'], {'unit': unit, 'category': dev_type, 'key': dev['key'], 'ip': dev['ip'], 'version': dev['version'], 'last_update': 0})
 
                 else:
-                    # update devices inDomoticz
+                    # update devices in Domoticz
                     Domoticz.Debug('Update devices in Domoticz')
                     # status Domoticz
                     # sValue = Devices[dev['id']].Units[1].sValue
                     # nValue = Devices[dev['id']].Units[1].nValue
-                    tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']), connection_timeout=1, connection_retry_limit=1)
-                    tuya.detect_available_dps()
+                    tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']))
                     if float(time.time()) > float(getConfigItem(dev['id'], 'last_update')):
+                        tuya.detect_available_dps()
+                        tuya.detect_available_dps() # Two times for detection bulb devices
                         tuyastatus = tuya.status()
                         # Domoticz.Debug('tuyastatus: ' + str(tuyastatus))
                         # Domoticz.Debug('dev: ' + str(dev))
@@ -340,23 +341,27 @@ def onHandleThread(startup):
                             # Domoticz.Debug('Type: ' + str(dev_type))
                             if dev_type in ('light', 'fanlight', 'pirlight'):
                                 UpdateDevice(dev['id'], unit, True if bool(tuyastatus['dps']['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
-                            if dev_type not in ('light', 'pirlight'):
-                                # Domoticz.Debug(str(mapping.values()))
-                                for item in mapping.values():
-                                    # Domoticz.Debug('Item' + str(item))
-                                    # Create sub devices
+                            # if dev_type not in ('light', 'pirlight'):
+                            # Domoticz.Debug(str(mapping.values()))
+                            for item in mapping.values():
+                                # Domoticz.Debug('Item' + str(item))
+                                try:
+                                    unit = int(item['dp'])
                                     try:
-                                        unit = int(item['dp'])
                                         dtype = Devices[dev['id']].Units[unit]
-                                        currentstatus = get_scale(tuyastatus['dps'][str(unit)], item)
-                                        Domoticz.Debug('Unit: ' + str(unit))
-
-                                        Domoticz.Debug('Currentstatus: ' + str(currentstatus))
-                                        Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']))
-                                        # Create Switch
-                                        if item['code'] in ('switch', 'switch_1', 'switch_2'):
+                                    except:
+                                        pass
+                                    Domoticz.Debug('tuyastatus: ' + str(tuyastatus['dps'][str(unit)]))
+                                    currentstatus = get_scale(tuyastatus['dps'][str(unit)], str(item))
+                                    Domoticz.Debug('Unit: ' + str(unit))
+                                    Domoticz.Debug('Currentstatus: ' + str(currentstatus))
+                                    Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']))
+                                    Domoticz.Debug('Item: ' + str(item['code']))
+                                    # Update Switch
+                                    if createDevice(dev['id'], unit) == False:
+                                        if str(item['code']) in ('switch', 'switch_1', 'switch_2'):
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
-                                        elif item['code'] in ['phase_a'] and item['type'] in ['Raw']:
+                                        elif str(item['code']) in ['phase_a'] and str(item['type']) in ['Raw']:
                                             decoded_data = base64.b64decode(currentstatus)
                                             # Extract voltage, current, and power data
                                             currentvoltage = int.from_bytes(decoded_data[:2], byteorder='big') * 0.1
@@ -371,6 +376,7 @@ def onHandleThread(startup):
                                         elif dtype.Type == 244 and dtype.SubType == 62 and dtype.SwitchType == 18:
                                             mode = ['off']
                                             mode.extend(item['values']['range'])
+                                            Domoticz.Debug('Mode: ' + str(mode))
                                             UpdateDevice(dev['id'], unit, int(mode.index(str(currentstatus)) * 10), 1, 0)
                                         elif dtype.Type == 243 and dtype.SubType == 19 and dtype.SwitchType == 13:
                                             mode = ['no fault']
@@ -384,11 +390,11 @@ def onHandleThread(startup):
                                         else:
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
                                         battery_device(unit, item['code'], currentstatus)
-                                    # except Exception as err:
-                                    #     Domoticz.Error('handleThread: ' + str(err)  + ' line ' + format(sys.exc_info()[-1].tb_lineno))
-                                    except:
-                                        pass
-                                        # Domoticz.Debug('No update mapping for ' + item['code'] + ' skipped')
+                                except Exception as err:
+                                    Domoticz.Error('handleThread: ' + str(err)  + ' line ' + format(sys.exc_info()[-1].tb_lineno))
+                                except:
+                                    pass
+                                    # Domoticz.Debug('No update mapping for ' + item['code'] + ' skipped')
 
 
 
@@ -418,81 +424,91 @@ def DumpConfigToLog():
 def DeviceType(category):
     'convert category to device type'
     'https://github.com/tuya/tuya-home-assistant/wiki/Supported-Device-Category'
-    if category in {'kg', 'cz', 'pc', 'tdq', 'znjdq', 'szjqr', 'aqcz'}:
-        result = 'switch'
-    elif category in {'dj', 'dd', 'dc', 'fwl', 'xdd', 'fwd', 'jsq', 'tyndj'}:
+    if category in {'dj', 'dd', 'dc', 'fwl', 'xdd', 'fwd', 'jsq', 'tyndj'}:
         result = 'light'
-    elif category in {'tgq', 'tgkg'}:
-        result = 'dimmer'
-    elif category in {'cl', 'clkg', 'jdcljqr'}:
-        result = 'cover'
-    elif category in {'qn'}:
-        result = 'heater'
-    elif category in {'wk', 'wkf', 'mjj', 'wkcz', 'kt','hwktwkq', 'ydkt'}:
-        result = 'thermostat'
-    elif category in {'wsdcg', 'co2bj', 'hjjcy', 'qxj', 'ldcg', 'swtz', 'zwjcy'}:
-        result = 'sensor'
-    elif category in {'rs'}:
-        result = 'heatpump'
-    elif category in {'znrb'}:
-        result = 'smartheatpump'
-    elif category in {'sp'}:
-        result = 'doorbell'
-    elif category in {'fs'}:
-        result = 'fan'
-    elif category in {'fsd'}:
-        result = 'fanlight'
-    elif category in {'sgbj'}:
-        result = 'siren'
-    elif category in {'wnykq'}:
-        result = 'smartir'
-    elif category in {'zndb', 'dlq'}:
-        result = 'powermeter'
-    elif category in {'wg2', 'wfcon'}:
-        result = 'gateway'
-    elif category in {'mcs'}:
-        result = 'doorcontact'
-    elif category in {'gyd'}:
-        result = 'pirlight'
-    elif category in {'qt','ywbj'}:
-        result = 'smokedetector'
-    elif category in {'ckmkzq'}:
-        result = 'garagedooropener'
-    elif category in {'cwwsq'}:
-        result = 'feeder'
-    elif category in {'sj'}:
-        result = 'waterleak'
-    elif category in {'pir'}:
-        result = 'presence'
-    elif category in {'sfkzq'}:
-        result = 'irrigation'
-    elif category in {'wxkg'}:
-        result = 'wswitch'
-    elif category in {'dgnbj'}:
-        result = 'lightsensor'
-    elif category in {'xktyd'}:
-        result = 'starlight'
-    elif category in {'ms'}:
-        result = 'smartlock'
-    elif category in {'cs'}:
-        result = 'dehumidifier'
-    elif category in {'sd'}:
-        result = 'vacuum'
-    elif category in {'mal'}:
-        result = 'multifunctionalarm'
-    elif category in {'kj'}:
-        result = 'purifier'
-    elif category in {'bh'}:
-        result = 'smartkettle'
-    elif category in {'gcj'}:
-        result = 'mower'
-    elif category in {'infrared_ac'}:
-        result = 'infrared_ac'
-    elif 'infrared_' in category: # keep it last
-        result = 'infrared'
     else:
-        result = 'unknown'
+        result = 'nolight'
     return result
+
+# # Select device type from category
+# def DeviceType(category):
+#     'convert category to device type'
+#     'https://github.com/tuya/tuya-home-assistant/wiki/Supported-Device-Category'
+#     if category in {'kg', 'cz', 'pc', 'tdq', 'znjdq', 'szjqr', 'aqcz'}:
+#         result = 'switch'
+#     elif category in {'dj', 'dd', 'dc', 'fwl', 'xdd', 'fwd', 'jsq', 'tyndj'}:
+#         result = 'light'
+#     elif category in {'tgq', 'tgkg'}:
+#         result = 'dimmer'
+#     elif category in {'cl', 'clkg', 'jdcljqr'}:
+#         result = 'cover'
+#     elif category in {'qn'}:
+#         result = 'heater'
+#     elif category in {'wk', 'wkf', 'mjj', 'wkcz', 'kt','hwktwkq', 'ydkt'}:
+#         result = 'thermostat'
+#     elif category in {'wsdcg', 'co2bj', 'hjjcy', 'qxj', 'ldcg', 'swtz', 'zwjcy'}:
+#         result = 'sensor'
+#     elif category in {'rs'}:
+#         result = 'heatpump'
+#     elif category in {'znrb'}:
+#         result = 'smartheatpump'
+#     elif category in {'sp'}:
+#         result = 'doorbell'
+#     elif category in {'fs'}:
+#         result = 'fan'
+#     elif category in {'fsd'}:
+#         result = 'fanlight'
+#     elif category in {'sgbj'}:
+#         result = 'siren'
+#     elif category in {'wnykq'}:
+#         result = 'smartir'
+#     elif category in {'zndb', 'dlq'}:
+#         result = 'powermeter'
+#     elif category in {'wg2', 'wfcon'}:
+#         result = 'gateway'
+#     elif category in {'mcs'}:
+#         result = 'doorcontact'
+#     elif category in {'gyd'}:
+#         result = 'pirlight'
+#     elif category in {'qt','ywbj'}:
+#         result = 'smokedetector'
+#     elif category in {'ckmkzq'}:
+#         result = 'garagedooropener'
+#     elif category in {'cwwsq'}:
+#         result = 'feeder'
+#     elif category in {'sj'}:
+#         result = 'waterleak'
+#     elif category in {'pir'}:
+#         result = 'presence'
+#     elif category in {'sfkzq'}:
+#         result = 'irrigation'
+#     elif category in {'wxkg'}:
+#         result = 'wswitch'
+#     elif category in {'dgnbj'}:
+#         result = 'lightsensor'
+#     elif category in {'xktyd'}:
+#         result = 'starlight'
+#     elif category in {'ms'}:
+#         result = 'smartlock'
+#     elif category in {'cs'}:
+#         result = 'dehumidifier'
+#     elif category in {'sd'}:
+#         result = 'vacuum'
+#     elif category in {'mal'}:
+#         result = 'multifunctionalarm'
+#     elif category in {'kj'}:
+#         result = 'purifier'
+#     elif category in {'bh'}:
+#         result = 'smartkettle'
+#     elif category in {'gcj'}:
+#         result = 'mower'
+#     elif category in {'infrared_ac'}:
+#         result = 'infrared_ac'
+#     elif 'infrared_' in category: # keep it last
+#         result = 'infrared'
+#     else:
+#         result = 'unknown'
+#     return result
 
 def UpdateDevice(ID, Unit, sValue, nValue, TimedOut, AlwaysUpdate = 0):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it

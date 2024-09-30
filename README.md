@@ -55,5 +55,6 @@ I only had an RGBWW light to fully test the script. If there is a device missing
 | 0.2 | Add unit detection devices |
 | 0.3 | Add True and False statment |
 | 0.4 | Add value scaling |
+| 0.5 | Changed some coding |
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/xenomes)
