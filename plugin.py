@@ -3,7 +3,7 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5a" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
         <h2>TinyTUYA Plugin Local Controlversion Alpha 0.5</h2><br/>
         <br/>
@@ -351,14 +351,14 @@ def onHandleThread(startup):
                                         dtype = Devices[dev['id']].Units[unit]
                                     except:
                                         pass
-                                    Domoticz.Debug('tuyastatus: ' + str(tuyastatus['dps'][str(unit)]))
-                                    currentstatus = get_scale(tuyastatus['dps'][str(unit)], str(item))
-                                    Domoticz.Debug('Unit: ' + str(unit))
-                                    Domoticz.Debug('Currentstatus: ' + str(currentstatus))
-                                    Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']))
-                                    Domoticz.Debug('Item: ' + str(item['code']))
                                     # Update Switch
                                     if createDevice(dev['id'], unit) == False:
+                                        Domoticz.Debug('tuyastatus: ' + str(tuyastatus['dps'][str(unit)]))
+                                        currentstatus = get_scale(tuyastatus['dps'][str(unit)], str(item))
+                                        Domoticz.Debug('Unit: ' + str(unit))
+                                        Domoticz.Debug('Currentstatus: ' + str(currentstatus))
+                                        Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']))
+                                        Domoticz.Debug('Item: ' + str(item['code']))
                                         if str(item['code']) in ('switch', 'switch_1', 'switch_2'):
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
                                         elif str(item['code']) in ['phase_a'] and str(item['type']) in ['Raw']:
@@ -680,10 +680,13 @@ def set_scale(raw, item):
     scale = 0
     try:
         Domoticz.Debug('Scale :' + str(item['values'].get('scale', 0 )))
-        scale = item['values'].get('scale', 0 )
+        if item['values'] in 'scale':
+            scale = item['values'].get('scale')
         # step = the_values.get('step', 0)
-        unit = item['values'].get('unit', 0)
-        max = item['values'].get('max', 0)
+        if item['values'] in 'unit':
+            unit = item['values'].get('unit')
+        if item['values'] in 'max':
+            max = item['values'].get('max')
 
         if scale == 1:
             result = int(raw * 10)
@@ -712,12 +715,14 @@ def get_scale(raw, item):
         raw = float(raw) if isinstance(raw, str) else raw
 
         try:
-            Domoticz.Debug('Raw Value: ' + str(raw))
-            Domoticz.Debug('Item Values: ' + str(item['values']))
-
-            scale = item['values'].get('scale', 0)
-            unit = item['values'].get('unit', 0)
-            max_value = item['values'].get('max', 0)
+            Domoticz.Debug('Raw Value: ' + str(raw) + '  Type: ' + str(type(raw)))
+            # Domoticz.Debug('Item Values: ' + str(item['values']))
+            if item['values'] in 'scale':
+                scale = item['values'].get('scale')
+            if item['values'] in 'unit':
+                unit = item['values'].get('unit')
+            if item['values'] in 'max':
+                max_value = item['values'].get('max')
 
             if scale == 0:
                 if unit == 'V' and len(str(max_value)) >= 4:
@@ -734,9 +739,8 @@ def get_scale(raw, item):
                 result = raw / 1000
             else:
                 result = int(raw)
-        except (KeyError, ValueError) as e:
+        except:
             result = raw
-            Domoticz.Debug('Exception occurred: ' + str(e) + ', returning raw value: ' + str(result))
     else:
         # If raw is not numeric, return it unmodified
         result = raw
