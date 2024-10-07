@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5a" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5b" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.5</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.5b</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -165,7 +165,7 @@ def onHandleThread(startup):
             with open(Parameters['HomeFolder'] + 'devices.json') as dFile:
                 devs = json.load(dFile)
 
-        Domoticz.Debug('Devs' + str(devs))
+        # Domoticz.Debug('Devs' + str(devs))
 
         # Initialize/Update devices from TUYA API
         if devs is None:
@@ -325,7 +325,7 @@ def onHandleThread(startup):
                     # status Domoticz
                     # sValue = Devices[dev['id']].Units[1].sValue
                     # nValue = Devices[dev['id']].Units[1].nValue
-                    tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']))
+                    tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']), connection_timeout=5, connection_retry_limit=1)
                     if float(time.time()) > float(getConfigItem(dev['id'], 'last_update')):
                         tuya.detect_available_dps()
                         tuya.detect_available_dps() # Two times for detection bulb devices
@@ -340,7 +340,9 @@ def onHandleThread(startup):
                         else:
                             # Domoticz.Debug('Type: ' + str(dev_type))
                             if dev_type in ('light', 'fanlight', 'pirlight'):
-                                UpdateDevice(dev['id'], unit, True if bool(tuyastatus['dps']['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
+                                tuyastatus_dps = tuyastatus.get('dps','Key not found')
+                                if tuyastatus_dps != 'Key not found':
+                                    UpdateDevice(dev['id'], unit, True if bool(tuyastatus_dps['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
                             # if dev_type not in ('light', 'pirlight'):
                             # Domoticz.Debug(str(mapping.values()))
                             for item in mapping.values():
@@ -352,13 +354,18 @@ def onHandleThread(startup):
                                     except:
                                         pass
                                     # Update Switch
-                                    if createDevice(dev['id'], unit) == False:
-                                        Domoticz.Debug('tuyastatus: ' + str(tuyastatus['dps'][str(unit)]))
-                                        currentstatus = get_scale(tuyastatus['dps'][str(unit)], str(item))
-                                        Domoticz.Debug('Unit: ' + str(unit))
-                                        Domoticz.Debug('Currentstatus: ' + str(currentstatus))
+                                    # Domoticz.Debug('Unit: ' + str(unit))
+                                    tuyastatus_dps = tuyastatus.get('dps','Key not found')
+                                    if tuyastatus_dps == 'Key not found':
+                                        tuyastatus_value = 'Key not found'
+                                    else:
+                                        tuyastatus_value = tuyastatus_dps.get(unit, 'Key not found')
+                                    # Domoticz.Debug('tuyastatus: ' + str(tuyastatus_value))
+                                    if createDevice(dev['id'], unit) == False and unit is not None and tuyastatus_value != 'Key not found':
+                                        currentstatus = get_scale(tuyastatus_value, str(item))
+                                        Domoticz.Debug('Unit: ' + str(unit) + ' Currentstatus: ' + str(currentstatus))
                                         Domoticz.Debug('dtype: ' + str(dtype.Type) + ' ' + str(dtype.SubType) + ' ' + str(dtype.SwitchType) + ' ' + str(item['values']))
-                                        Domoticz.Debug('Item: ' + str(item['code']))
+                                        # Domoticz.Debug('Item: ' + str(item['code']))
                                         if str(item['code']) in ('switch', 'switch_1', 'switch_2'):
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
                                         elif str(item['code']) in ['phase_a'] and str(item['type']) in ['Raw']:
@@ -376,7 +383,7 @@ def onHandleThread(startup):
                                         elif dtype.Type == 244 and dtype.SubType == 62 and dtype.SwitchType == 18:
                                             mode = ['off']
                                             mode.extend(item['values']['range'])
-                                            Domoticz.Debug('Mode: ' + str(mode))
+                                            # Domoticz.Debug('Mode: ' + str(mode))
                                             UpdateDevice(dev['id'], unit, int(mode.index(str(currentstatus)) * 10), 1, 0)
                                         elif dtype.Type == 243 and dtype.SubType == 19 and dtype.SwitchType == 13:
                                             mode = ['no fault']
@@ -534,7 +541,7 @@ def SendCommand(ID, Unit, Status, Type = ''):
         item = selected_device['mapping'][str(Unit)]
         Status = get_scale(Status, item)
         Domoticz.Debug('Status: ' + str(Status))
-        tuya = tinytuya.BulbDevice(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=1, connection_retry_limit=1)
+        tuya = tinytuya.BulbDevice(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=5, connection_retry_limit=1)
         tuya.detect_available_dps()
         # tuya = tinytuya.BulbDevice(str(ID), getConfigItem(ID, 'ip'), getConfigItem(ID, 'key'))
         # tuya.set_version(str(getConfigItem(ID, 'version')))
@@ -563,7 +570,7 @@ def SendCommand(ID, Unit, Status, Type = ''):
         selected_device = next((dev for dev in devs if dev['id'] == str(ID)), None)
         item = selected_device['mapping'][str(Unit)]
         Status = get_scale(Status, item)
-        tuya = tinytuya.Device(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=1, connection_retry_limit=1)
+        tuya = tinytuya.Device(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=5, connection_retry_limit=1)
         tuya.detect_available_dps()
         payload = tuya.generate_payload(tinytuya.CONTROL_NEW, {Unit: Status})
         tuya.send(payload)
@@ -679,7 +686,7 @@ def ping_ok(sHost) -> bool:
 def set_scale(raw, item):
     scale = 0
     try:
-        Domoticz.Debug('Scale :' + str(item['values'].get('scale', 0 )))
+        # Domoticz.Debug('Scale :' + str(item['values'].get('scale', 0 )))
         if item['values'] in 'scale':
             scale = item['values'].get('scale')
         # step = the_values.get('step', 0)
@@ -715,7 +722,7 @@ def get_scale(raw, item):
         raw = float(raw) if isinstance(raw, str) else raw
 
         try:
-            Domoticz.Debug('Raw Value: ' + str(raw) + '  Type: ' + str(type(raw)))
+            # Domoticz.Debug('Raw Value: ' + str(raw) + '  Type: ' + str(type(raw)))
             # Domoticz.Debug('Item Values: ' + str(item['values']))
             if item['values'] in 'scale':
                 scale = item['values'].get('scale')
