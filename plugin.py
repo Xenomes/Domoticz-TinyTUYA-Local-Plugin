@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.5b" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.6" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.5b</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.6</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -40,11 +40,13 @@ import tinytuya
 # from tinytuya import Contrib
 import subprocess
 import platform
+import os
 import sys
 import json
 import ast
 import time
 import base64
+
 
 class BasePlugin:
     enabled = False
@@ -54,6 +56,9 @@ class BasePlugin:
     def onStart(self):
         Domoticz.Log('TinyTUYA ' + Parameters['Version'] + ' plugin started')
         Domoticz.Log('TinyTuya Version:' + tinytuya.version )
+
+        global testData
+
         if Parameters['Mode6'] != '0':
             Domoticz.Debugging(int(Parameters['Mode6']))
             # Domoticz.Log('Debugger started, use 'telnet 0.0.0.0 4444' to connect')
@@ -61,6 +66,11 @@ class BasePlugin:
             # rpdb.set_trace()
             DumpConfigToLog()
         # Domoticz.Heartbeat(10)
+        testData = False
+        if os.path.isfile(Parameters['HomeFolder'] + '/testdata.on'):
+            testData = True
+            Domoticz.Error('!!! Warning Plugin overruled by local json file !!!')
+
         onHandleThread(True)
 
     def onStop(self):
@@ -157,17 +167,18 @@ def onHandleThread(startup):
     # Run for every device on startup and heartbeat
     try:
         if startup == True:
-            global tuya
-            global devs
-            global last_update
+            global tuya, devs, last_update, result
             last_update = time.time()
             devs = None
-            with open(Parameters['HomeFolder'] + 'devices.json') as dFile:
+            with open(Parameters['HomeFolder'] + '/devices.json') as dFile:
                 devs = json.load(dFile)
-
-        # Domoticz.Debug('Devs' + str(devs))
+        # Domoticz.Debug('Devs: ' + str(devs))
+        # Domoticz.Debug('Result: ' + str(result))
 
         # Initialize/Update devices from TUYA API
+        if testData == True:
+            with open(Parameters['HomeFolder'] + '/snapshot.json') as rFile:
+                result = json.load(rFile)
         if devs is None:
             Domoticz.Error('devices.json is missing in the plugin folder!')
             exit
@@ -180,7 +191,7 @@ def onHandleThread(startup):
                 value['dp'] = key
             code_list = [value['code'] for key, value in mapping.items()]
             # Domoticz.Debug(str(code_list))
-            if str(dev['ip']) != '':
+            if str(dev['ip']) != '' or startup == True:
                 # tuya = tinytuya.Device(ev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=float(dev['version']))
                 # tuya.use_old_device_list = True
                 # tuya.new_sign_algorithm = True
@@ -325,12 +336,19 @@ def onHandleThread(startup):
                     # status Domoticz
                     # sValue = Devices[dev['id']].Units[1].sValue
                     # nValue = Devices[dev['id']].Units[1].nValue
-                    tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']), connection_timeout=5, connection_retry_limit=1)
-                    if float(time.time()) > float(getConfigItem(dev['id'], 'last_update')):
+                    if testData == True:
+                        Tuyalist = list(filter(lambda tuyasfilter: tuyasfilter['id'] == dev['id'], result['devices']))
+                        try:
+                            tuyastatus = Tuyalist[0]['dps']
+                        except:
+                            exit
+                    else:
+                        tuya = tinytuya.Device(dev_id=str(dev['id']), address=str(dev['ip']), local_key=str(dev['key']), version=str(dev['version']), connection_timeout=5, connection_retry_limit=1)
                         tuya.detect_available_dps()
                         tuya.detect_available_dps() # Two times for detection bulb devices
                         tuyastatus = tuya.status()
-                        # Domoticz.Debug('tuyastatus: ' + str(tuyastatus))
+                    if float(time.time()) > float(getConfigItem(dev['id'], 'last_update')) or testData == True:
+                        Domoticz.Debug('tuyastatus: ' + str(tuyastatus))
                         # Domoticz.Debug('dev: ' + str(dev))
                         unit = 1
                         if 'Device Unreachable' in str(tuyastatus):
@@ -344,7 +362,7 @@ def onHandleThread(startup):
                                 if tuyastatus_dps != 'Key not found':
                                     UpdateDevice(dev['id'], unit, True if bool(tuyastatus_dps['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
                             # if dev_type not in ('light', 'pirlight'):
-                            # Domoticz.Debug(str(mapping.values()))
+                            Domoticz.Debug(str(mapping.values()))
                             for item in mapping.values():
                                 # Domoticz.Debug('Item' + str(item))
                                 try:
@@ -359,7 +377,7 @@ def onHandleThread(startup):
                                     if tuyastatus_dps == 'Key not found':
                                         tuyastatus_value = 'Key not found'
                                     else:
-                                        tuyastatus_value = tuyastatus_dps.get(unit, 'Key not found')
+                                        tuyastatus_value = tuyastatus_dps.get(str(unit), 'Key not found')
                                     # Domoticz.Debug('tuyastatus: ' + str(tuyastatus_value))
                                     if createDevice(dev['id'], unit) == False and unit is not None and tuyastatus_value != 'Key not found':
                                         currentstatus = get_scale(tuyastatus_value, str(item))
@@ -394,6 +412,8 @@ def onHandleThread(startup):
                                                 mode.extend(item['values']['range'])
                                                 currentmode = mode[currentstatus].replace("_", " ").capitalize()
                                             UpdateDevice(dev['id'], unit, str(currentmode), 1, 0)
+                                        elif dtype.Type == 81 and dtype.SubType == 1:
+                                            UpdateDevice(dev['id'], unit, 0, currentstatus, 0)
                                         else:
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
                                         battery_device(unit, item['code'], currentstatus)
@@ -402,7 +422,6 @@ def onHandleThread(startup):
                                 except:
                                     pass
                                     # Domoticz.Debug('No update mapping for ' + item['code'] + ' skipped')
-
 
 
     except Exception as err:
