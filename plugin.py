@@ -348,7 +348,7 @@ def onHandleThread(startup):
                         tuya.detect_available_dps() # Two times for detection bulb devices
                         tuyastatus = tuya.status()
                     if float(time.time()) > float(getConfigItem(dev['id'], 'last_update')) or testData == True:
-                        Domoticz.Debug('tuyastatus: ' + str(tuyastatus))
+                        # Domoticz.Debug('tuyastatus: ' + str(tuyastatus))
                         # Domoticz.Debug('dev: ' + str(dev))
                         unit = 1
                         if 'Device Unreachable' in str(tuyastatus):
@@ -362,7 +362,7 @@ def onHandleThread(startup):
                                 if tuyastatus_dps != 'Key not found':
                                     UpdateDevice(dev['id'], unit, True if bool(tuyastatus_dps['1']) == True else False, 0 if bool(tuyastatus['dps'][str(unit)]) == False else 1, 0)
                             # if dev_type not in ('light', 'pirlight'):
-                            Domoticz.Debug(str(mapping.values()))
+                            # Domoticz.Debug(str(mapping.values()))
                             for item in mapping.values():
                                 # Domoticz.Debug('Item' + str(item))
                                 try:
@@ -559,7 +559,7 @@ def SendCommand(ID, Unit, Status, Type = ''):
         selected_device = next((dev for dev in devs if dev['id'] == str(ID)), None)
         item = selected_device['mapping'][str(Unit)]
         Status = get_scale(Status, item)
-        Domoticz.Debug('Status: ' + str(Status))
+        # Domoticz.Debug('Status: ' + str(Status))
         tuya = tinytuya.BulbDevice(dev_id=str(ID), address=str(getConfigItem(ID, 'ip')), local_key=str(getConfigItem(ID, 'key')), version=str(getConfigItem(ID, 'version')), connection_timeout=5, connection_retry_limit=1)
         tuya.detect_available_dps()
         # tuya = tinytuya.BulbDevice(str(ID), getConfigItem(ID, 'ip'), getConfigItem(ID, 'key'))
