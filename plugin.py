@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.6" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.7" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.6</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.7</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -108,8 +108,12 @@ class BasePlugin:
             SendCommand(DeviceID, Unit, eval(Color), category)
             UpdateDevice(DeviceID, Unit, Color, 1, 0)
         else:
-            SendCommand(DeviceID, Unit, True if Command not in ['Off', 'Closed', False] else False, category)
-            UpdateDevice(DeviceID, Unit, Command, 1 if Command not in ['Off', 'Closed'] else 0, 0)
+            if dev.Type == 81 and dev.SubType == 1:
+                SendCommand(DeviceID, Unit, Command, category)
+                UpdateDevice(DeviceID, Unit, 0, Command, 0)
+            else:
+                SendCommand(DeviceID, Unit, True if Command not in ['Off', 'Closed', False] else False, category)
+                UpdateDevice(DeviceID, Unit, Command, 1 if Command not in ['Off', 'Closed'] else 0, 0)
 
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log('Notification: ' + Name + ', ' + Subject + ', ' + Text + ', ' + Status + ', ' + str(Priority) + ', ' + Sound + ', ' + ImageFile)
@@ -265,9 +269,9 @@ def onHandleThread(startup):
                             elif item['code'] in ['ActivePowerA'] in code_list and ['ActivePowerB'] in code_list and ['ActivePowerC']:
                                 Domoticz.Log('Create Current (3 Phase) device')
                                 Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=89, Subtype=1, Used=1).Create() #Ampere (3 Phase)
-                            elif item['code'] in ['cur_power', 'cur_power', 'power_a', 'power_b']:
-                                Domoticz.Log('Create Watt device')
-                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=248, Subtype=1, Switchtype=0, Used=1).Create() #Electric Usage
+                            elif item['code'] in [ 'power_a','power_b'] :
+                                Domoticz.Log('Create Watt device '+str(item['code']))
+                                Domoticz.Unit(Name=dev['name'] + ' (' + str(item['code']) + ')', DeviceID=dev['id'], Unit=unit, Type=243, Subtype=29, Switchtype=0,TypeName="kWh", Used=1).Create() #Electric Usage
                             elif item['code'] in ['cur_current', 'cmp_cur', 'leakage_current', 'Current']:
                                 Domoticz.Log('Create Amperes device')
                                 the_values = item['values']
@@ -414,6 +418,21 @@ def onHandleThread(startup):
                                             UpdateDevice(dev['id'], unit, str(currentmode), 1, 0)
                                         elif dtype.Type == 81 and dtype.SubType == 1:
                                             UpdateDevice(dev['id'], unit, 0, currentstatus, 0)
+                                        elif dtype.Type == 243 and dtype.SubType == 29 and dtype.SwitchType == 0: # power A / B
+                                            currentstatus = currentstatus /10.
+                                            if item['code'] == 'power_a':
+                                                signe = tuyastatus_dps.get(str(102), 'values')
+                                            elif  item['code'] == 'power_b':
+                                                signe = tuyastatus_dps.get(str(104), 'values')
+                                            else:
+                                                signe = ''
+                                            
+                                            if signe == 'FORWARD' :
+                                                signe =' +'
+                                            elif signe == 'REVERSE' :
+                                                signe = ' -'
+                                            Domoticz.Debug('Update Power  '+str(dtype.Unit)+signe+str(currentstatus)+' '+str (item['code'])+' sens'+signe)
+                                            UpdateDevice(dev['id'], unit,signe + str (currentstatus) + ';'+ signe + str (currentstatus), 0, 0)
                                         else:
                                             UpdateDevice(dev['id'], unit, currentstatus, 0 if currentstatus == False else 1, 0)
                                         battery_device(unit, item['code'], currentstatus)
