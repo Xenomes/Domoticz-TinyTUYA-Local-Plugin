@@ -57,6 +57,6 @@ I only had an RGBWW light to fully test the script. If there is a device missing
 | 0.4 | Add value scaling |
 | 0.5 | Changed some coding |
 | 0.6 | Add debugging external files |
-| 0.7 | update byjiemeb for a dual meter |
+| 0.7 | Update byjiemeb for a dual meter |
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/xenomes)
