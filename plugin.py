@@ -3,9 +3,9 @@
 # Author: Xenomes (xenomes@outlook.com)
 #
 """
-<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.7" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
+<plugin key="tinytuyalocal" name="TinyTUYA (Local Control)" author="Xenomes" version="0.8" wikilink="" externallink="https://github.com/Xenomes/Domoticz-TinyTUYA-Local-Plugin.git">
     <description>
-        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.7</h2><br/>
+        <h2>TinyTUYA Plugin Local Controlversion Alpha 0.8</h2><br/>
         <br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
@@ -235,7 +235,7 @@ def onHandleThread(startup):
                         if  createDevice(dev['id'], unit):
 
                             # Create Switch
-                            if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed', 'MachineRainMode']:
+                            if item['code'] in [f'switch{i}' for i in range(1, 9)] + [f'switch_{i}' for i in range(1, 9)] + ['switch', 'fan_switch', 'window_check', 'child_lock', 'muffling', 'light', 'colour_switch', 'anion', 'switch_charge', 'laser_switch', 'doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock', 'position', 'switch_pir', 'fan_speed', 'MachineRainMode','switch_on']:
                                 Domoticz.Log('Create device Switch')
                                 if item['code'] in ['doorcontact', 'doorcontact_state', 'door_control_1', 'door_state_1', 'smartlock']:
                                     Domoticz.Log('Create Doorcontact device')
