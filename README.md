@@ -1,6 +1,16 @@
+# ⚠️ IMPORTANT — THIS PROJECT IS NO LONGER MAINTAINED
+
+**This plugin is no longer maintained and will not receive any further updates.**
+
+Local Control has now been merged into the **Domoticz-TinyTUYA-Plugin**. To activate full-local operation, place the `snapshot.json` and `tuya-raw.json` files in the plugin folder.
+
+> **Please note:** this new method is **not compatible** with the devices created by this (old) plugin. Existing devices must be recreated in the new plugin.
+
+Please use the actively maintained Domoticz-TinyTUYA-Plugin instead of this outdated version.
+
+---
+
 # NOT YET READY FOR LIVE SYSTEMS
-
-
 
 # Domoticz-TinyTUYA-Local-Plugin
 TUYA Plugin for Domoticz home automation
